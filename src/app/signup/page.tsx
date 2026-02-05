@@ -3,9 +3,9 @@ import { SignupInput, signupSchema } from "@/utils/signupValidation"
 import React,{ useState } from "react"
 import { useRouter } from 'next/navigation'; 
 import { validateField } from "@/utils/fieldValidation";
-import axios from "axios";
 import { toast } from "react-toastify";
 import Link from 'next/link';
+import api from "@/services/api";
 
 
 const SignupPage = () => {
@@ -61,7 +61,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   try {
     await signupSchema.validate(formData, { abortEarly: false });
-    const response = await axios.post('http://localhost:8000/api/v1/auth/signup', formData);
+    const response = await api.post('/signup', formData);
     toast.success(response.data.message || "Welcome aboard!");
     router.push('/signin');
 
@@ -71,6 +71,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       toast.error(apiMessage);
   } finally {
     setLoading(false);
+    
   }
 };
 const isFormInvalid = !signupSchema.isValidSync(formData);
