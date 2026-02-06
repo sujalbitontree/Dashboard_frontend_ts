@@ -1,0 +1,9 @@
+.footer-fp{
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+}
+.forgot-pass-link{
+   text-decoration: none;
+   
+}
