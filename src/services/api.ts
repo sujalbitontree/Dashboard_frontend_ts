@@ -5,6 +5,7 @@ declare module 'axios' {
     _retry?: boolean;
   }
 }
+
 const api: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BACKEND_API,
   timeout: 10000,
@@ -27,6 +28,8 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+
+
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error) => {
@@ -47,21 +50,27 @@ api.interceptors.response.use(
           { withCredentials: true } 
         );
 
-        const { accessToken } = res.data;
+        const newAccessToken =  res.data?.accessToken;
 
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('accessToken', accessToken);
+        if (newAccessToken && typeof newAccessToken === 'string') {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('accessToken', newAccessToken);
+          }
+          
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          }
+          return api(originalRequest);
+        } else {
+          throw new Error('Invalid token structure received');
         }
 
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-        return api(originalRequest);
-        
       } catch (refreshError) {
-        console.error('Refresh token expired. Logging out...');
+        console.error('Session expired. Redirecting to login...');
         
         if (typeof window !== 'undefined') {
           localStorage.removeItem('accessToken');
-          window.location.href = '/signin';
+          window.location.replace('/signin');
         }
         return Promise.reject(refreshError);
       }

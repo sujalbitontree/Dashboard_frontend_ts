@@ -1,89 +1,84 @@
-"use client"
-import { SignupInput, signupSchema } from "@/utils/signupValidation"
-import React,{ useState } from "react"
-import { useRouter } from 'next/navigation'; 
-import { validateField } from "@/utils/fieldValidation";
-import { toast } from "react-toastify";
-import Link from 'next/link';
-import api from "@/services/api";
+'use client'
 
+import React, { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { toast } from 'react-toastify'
+import { AxiosError } from 'axios'
+import { ValidationError } from 'yup'
+import { useForm } from '@/hooks/useForm'
+import { SignupInput, signupSchema } from '@/utils/signupValidation'
+import api from '@/services/api'
+
+interface SignupFormState extends Omit<SignupInput, 'age'> {
+  age: number | ''
+}
 
 const SignupPage = () => {
-    const [formData,setFormData] = useState<SignupInput>({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    age: '' as any , 
-    gender: '',
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+
+  const { formData, setFormData, errors, setErrors, handleChange, handleBlur } =
+    useForm<SignupFormState>({
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      age: '',
+      gender: '',
     })
 
-    const [error, setError] = useState<Partial<Record<keyof SignupInput, string>>>({});
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const isFormInvalid = useMemo(() => {
+    const hasEmptyFields = Object.values(formData).some((val) => val === '')
+    const hasActiveErrors = Object.values(errors).some((msg) => !!msg)
+    return hasEmptyFields || hasActiveErrors
+  }, [formData, errors])
 
-  const handleFieldValidation = async (name:keyof SignupInput,value :any)=>{
-    const errorMsg = await validateField(name,value,formData)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
 
-    setError((prev) => ({
-    ...prev,
-    [name]: errorMsg,
-  }));
+    try {
+      await signupSchema.validate(formData, { abortEarly: false })
+
+      const response = await api.post('/signup', formData)
+      toast.success(response.data?.message || 'Welcome aboard!')
+      router.push('/signin')
+    } catch (err: unknown) {
+      if (err instanceof ValidationError) {
+        const validationErrors: Partial<Record<keyof SignupInput, string>> = {}
+        err.inner.forEach((curr) => {
+          if (curr.path) {
+            validationErrors[curr.path as keyof SignupInput] = curr.message
+          }
+        })
+        setErrors(validationErrors)
+      } else if (err instanceof AxiosError) {
+        toast.error(err.response?.data?.message || 'Signup failed')
+      } else {
+        toast.error('An unexpected error occurred')
+      }
+      setFormData({
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        age: '',
+        gender: '',
+      })
+    } finally {
+      setLoading(false)
+    }
   }
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const { name, value, type } = e.target;
-  const fieldName = name as keyof SignupInput;
-  
 
-  setFormData(prev => ({ ...prev, [fieldName]: value }));
-
-  if (error[fieldName]) {
-    handleFieldValidation(fieldName, value);
-  }
-};
-
-const handleBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
-  const { name, value, type } = e.target;
-  const fieldName = name as keyof SignupInput;
-  
-
-  const errorMessage = await validateField(fieldName, value, formData);
-
-  setError((prev) => ({
-    ...prev,
-    [fieldName]: errorMessage,
-  }));
-};
-
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
-
-  try {
-    await signupSchema.validate(formData, { abortEarly: false });
-    const response = await api.post('/signup', formData);
-    toast.success(response.data.message || "Welcome aboard!");
-    router.push('/signin');
-
-  } catch (err: any) {
-      const apiMessage = err.response?.data?.message || "Something went wrong";
-      setError(err.response?.data?.message || "Something went wrong")
-      toast.error(apiMessage);
-  } finally {
-    setLoading(false);
-    
-  }
-};
-const isFormInvalid = !signupSchema.isValidSync(formData);
   return (
-    <div className={`wrapper`}>
+    <div className="wrapper">
       <div className="container">
         <div className="head">
-          
           <h2>Create account.</h2>
         </div>
 
-        <form className="inputs" onSubmit={handleSubmit}>
+        <form className="inputs" onSubmit={handleSubmit} noValidate>
           <div className="field">
             <label htmlFor="username">Username</label>
             <input
@@ -95,7 +90,9 @@ const isFormInvalid = !signupSchema.isValidSync(formData);
               onBlur={handleBlur}
               required
             />
-            {error.username && <small className="errors">{error.username}</small>}
+            {errors.username && (
+              <small className="errors">{errors.username}</small>
+            )}
           </div>
 
           <div className="field">
@@ -109,7 +106,7 @@ const isFormInvalid = !signupSchema.isValidSync(formData);
               onBlur={handleBlur}
               required
             />
-            {error.email && <small className="errors">{error.email}</small>}
+            {errors.email && <small className="errors">{errors.email}</small>}
           </div>
 
           <div className="field">
@@ -123,7 +120,9 @@ const isFormInvalid = !signupSchema.isValidSync(formData);
               onBlur={handleBlur}
               required
             />
-            {error.password && <small className="errors">{error.password}</small>}
+            {errors.password && (
+              <small className="errors">{errors.password}</small>
+            )}
           </div>
 
           <div className="field">
@@ -137,7 +136,9 @@ const isFormInvalid = !signupSchema.isValidSync(formData);
               onBlur={handleBlur}
               required
             />
-            {error.confirmPassword && <small className="errors">{error.confirmPassword}</small>}
+            {errors.confirmPassword && (
+              <small className="errors">{errors.confirmPassword}</small>
+            )}
           </div>
 
           <div className="field">
@@ -151,7 +152,7 @@ const isFormInvalid = !signupSchema.isValidSync(formData);
               onBlur={handleBlur}
               required
             />
-            {error.age && <small className="errors">{error.age}</small>}
+            {errors.age && <small className="errors">{errors.age}</small>}
           </div>
 
           <div className="radio-btn">
@@ -171,7 +172,7 @@ const isFormInvalid = !signupSchema.isValidSync(formData);
                 </div>
               ))}
             </div>
-            {error.gender && <small className="errors">{error.gender}</small>}
+            {errors.gender && <small className="errors">{errors.gender}</small>}
           </div>
 
           <div className="btn">
@@ -186,7 +187,9 @@ const isFormInvalid = !signupSchema.isValidSync(formData);
 
           <div className="footer">
             <span>Already have an account?</span>{' '}
-            <Link className="link" href="/signin">Sign in</Link>
+            <Link className="link" href="/signin">
+              Sign in
+            </Link>
           </div>
         </form>
       </div>
