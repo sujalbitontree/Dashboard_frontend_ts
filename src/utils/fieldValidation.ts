@@ -1,3 +1,4 @@
+import { ValidationError } from 'yup'
 import { SignupInput, signupSchema } from './signupValidation'
 
 export const validateField = async (
@@ -9,7 +10,10 @@ export const validateField = async (
     const dataTovalidate = { ...allFormData, [name]: value }
     await signupSchema.validateAt(name, dataTovalidate)
     return ''
-  } catch (error: any) {
-    return error.message
+  } catch (error: unknown) {
+    if(error instanceof ValidationError){
+      return error.message
+    }
+    return 'An unexpected error occurred';
   }
 }
