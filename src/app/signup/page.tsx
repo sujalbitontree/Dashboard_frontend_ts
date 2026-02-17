@@ -9,17 +9,19 @@ import { ValidationError } from 'yup'
 import { useForm } from '@/hooks/useForm'
 import { SignupInput, signupSchema } from '@/utils/signupValidation'
 import api from '@/services/api'
+import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 
-interface SignupFormState extends Omit<SignupInput, 'age'> {
-  age: number | ''
-}
+
 
 const SignupPage = () => {
+
+  const { isLoading } = useAuthRedirect()
+  
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
-  const { formData, setFormData, errors, setErrors, handleChange, handleBlur } =
-    useForm<SignupFormState>({
+  const { formData, setFormData, errors, setErrors, handleChange } =
+    useForm<SignupInput>({
       username: '',
       email: '',
       password: '',
@@ -27,12 +29,17 @@ const SignupPage = () => {
       age: '',
       gender: '',
     })
+   
 
   const isFormInvalid = useMemo(() => {
     const hasEmptyFields = Object.values(formData).some((val) => val === '')
     const hasActiveErrors = Object.values(errors).some((msg) => !!msg)
     return hasEmptyFields || hasActiveErrors
   }, [formData, errors])
+
+   if (isLoading) {
+    return <div className='loading'>Loading...</div>
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,7 +49,7 @@ const SignupPage = () => {
       await signupSchema.validate(formData, { abortEarly: false })
 
       const response = await api.post('/signup', formData)
-      toast.success(response.data?.message || 'Welcome aboard!')
+      toast.success(response.data?.message)
       router.push('/signin')
     } catch (err: unknown) {
       if (err instanceof ValidationError) {
@@ -87,7 +94,7 @@ const SignupPage = () => {
               name="username"
               value={formData.username}
               onChange={handleChange}
-              onBlur={handleBlur}
+              
               required
             />
             {errors.username && (
@@ -103,7 +110,7 @@ const SignupPage = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              onBlur={handleBlur}
+              
               required
             />
             {errors.email && <small className="errors">{errors.email}</small>}
@@ -117,7 +124,7 @@ const SignupPage = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              onBlur={handleBlur}
+              
               required
             />
             {errors.password && (
@@ -133,7 +140,7 @@ const SignupPage = () => {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              onBlur={handleBlur}
+              
               required
             />
             {errors.confirmPassword && (
@@ -147,9 +154,14 @@ const SignupPage = () => {
               type="number"
               id="age"
               name="age"
+              onKeyDown={(e)=>{
+                if(['e','E','+','-','.'].includes(e.key)){
+                  e.preventDefault()
+                }
+              }}
               value={formData.age}
               onChange={handleChange}
-              onBlur={handleBlur}
+              
               required
             />
             {errors.age && <small className="errors">{errors.age}</small>}

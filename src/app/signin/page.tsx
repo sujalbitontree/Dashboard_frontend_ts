@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-toastify'
 import { AxiosError } from 'axios'
@@ -10,20 +10,22 @@ import { useForm } from '@/hooks/useForm'
 import { SigninInput, signinSchema } from '@/utils/signinValidation'
 import api from '@/services/api'
 import Link from 'next/link'
+import { useAuthRedirect } from '@/hooks/useAuthRedirect'
 
 const SigninPage = () => {
+  const { isLoading } = useAuthRedirect('/dashboard')
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [isFormValid, setIsFormValid] = useState(false)
 
-  const {
-    formData,
-    setFormData,
-    errors,
-    setErrors,
-    handleChange,
-    handleBlur,
-    isFormValid,
-  } = useForm<SigninInput>({ email: '', password: '' })
+  const { formData, setFormData, errors, setErrors, handleChange } =
+    useForm<SigninInput>({ email: '', password: '' })
+
+  useEffect(() => {
+    signinSchema.isValid(formData).then((valid) => {
+      setIsFormValid(valid)
+    })
+  }, [formData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,11 +43,14 @@ const SigninPage = () => {
       router.push('/dashboard')
     } catch (err: unknown) {
       if (err instanceof ValidationError) {
-        const yupErrors: any = {}
-        err.inner.forEach((e) => {
-          if (e.path) yupErrors[e.path] = e.message
+        const validationErrors: Record<string, string> = {}
+        err.inner.forEach((error) => {
+          if (error.path) {
+            validationErrors[error.path] = error.message
+          }
         })
-        setErrors(yupErrors)
+
+        setErrors(validationErrors)
       } else if (err instanceof AxiosError) {
         toast.error(err.response?.data?.message || 'Login failed')
         setFormData({ email: '', password: '' })
@@ -54,12 +59,13 @@ const SigninPage = () => {
       setLoading(false)
     }
   }
-  const hasNoErrors = !Object.values(errors).some(
-    (msg) => msg !== '' && msg !== undefined
-  )
+  
 
-  const isBtnDisabled =
-    !formData.email || !formData.password || !hasNoErrors || loading
+  const isBtnDisabled = !isFormValid || loading
+
+  if (isLoading) {
+    return <div className='loading'>Loading...</div>
+  }
   return (
     <div className="wrapper">
       <div className="container">
@@ -67,7 +73,7 @@ const SigninPage = () => {
           <h2>Sign in to your account.</h2>
         </div>
 
-        <form className="inputs" onSubmit={handleSubmit} noValidate>
+        <form className="inputs" onSubmit={handleSubmit}>
           <div className="field">
             <label htmlFor="email">Email</label>
             <input
@@ -76,7 +82,7 @@ const SigninPage = () => {
               type="email"
               value={formData.email}
               onChange={handleChange}
-              onBlur={handleBlur}
+             
             />
             {errors.email && <small className="errors">{errors.email}</small>}
           </div>
@@ -89,7 +95,7 @@ const SigninPage = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              onBlur={handleBlur}
+              
             />
             {errors.password && (
               <small className="errors">{errors.password}</small>
@@ -104,7 +110,9 @@ const SigninPage = () => {
 
           <div className="footer footer-fp">
             <div>
-              <Link href="/forgotpassword" className='forgot-pass-link'>Forgot password ?</Link>
+              <Link href="/forgotpassword" className="forgot-pass-link">
+                Forgot password ?
+              </Link>
             </div>
             <div>
               <span>Don`t have an account?</span>{' '}

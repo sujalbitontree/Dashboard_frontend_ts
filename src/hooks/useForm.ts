@@ -1,42 +1,50 @@
-import { useState, useCallback } from 'react';
-import { validateField } from '@/utils/fieldValidation';
+import { useState, useCallback, useRef, useEffect } from 'react'
+import { validateField } from '@/utils/fieldValidation'
 
 export function useForm<T extends object>(initialValues: T) {
-  const [formData, setFormData] = useState<T>(initialValues);
-  const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
+  const [formData, setFormData] = useState<T>(initialValues)
+  const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({})
 
-  const handleFieldValidation = useCallback(async (name: keyof T, value: any, currentData: T) => {
-    const errorMsg = await validateField(name as string, value, currentData);
-    setErrors((prev) => ({
-      ...prev,
-      [name]: errorMsg,
-    }));
-    return errorMsg;
-  }, []);
+  const touchedFields = useRef<Partial<Record<keyof T, boolean>>>({})
+
+  const handleFieldValidation = useCallback(
+    async (name: keyof T, value: string, currentData: T) => {
+      const errorMsg = await validateField(name as string, value, currentData as [])
+      setErrors((prev) => ({
+        ...prev,
+        [name]: errorMsg,
+      }))
+      return errorMsg
+    },
+    []
+  )
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
-    const fieldName = name as keyof T;
+    const { name, value } = e.target
+    const fieldName = name as keyof T
 
-    const finalValue = type === 'number' ? (value === '' ? '' : Number(value)) : value;
+    touchedFields.current[fieldName] = true
+
 
     setFormData((prev) => {
-      const newData = { ...prev, [fieldName]: finalValue };
-      
-      if (errors[fieldName]) {
-        handleFieldValidation(fieldName, finalValue, newData);
-      }
-      return newData;
-    });
-  };
+      const newData = { ...prev, [fieldName]: value }
 
-  const handleBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
-    const fieldName = name as keyof T;
-    const finalValue = type === 'number' ? (value === '' ? '' : Number(value)) : value;
+      return newData
+    })
+  }
 
-    await handleFieldValidation(fieldName, finalValue, formData);
-  };
+
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      Object.keys(touchedFields.current).forEach((key) => {
+        const fieldName = key as keyof T
+        handleFieldValidation(fieldName, formData[fieldName] as string, formData)
+      })
+    }, 500)
+
+    return () => clearTimeout(timeoutId)
+  }, [formData, handleFieldValidation])
 
   return {
     formData,
@@ -44,7 +52,6 @@ export function useForm<T extends object>(initialValues: T) {
     errors,
     setErrors,
     handleChange,
-    handleBlur,
     hasErrors: Object.values(errors).some((msg) => !!msg),
-  };
+  }
 }

@@ -1,0 +1,132 @@
+
+.edit-profile-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f4f7f6; 
+}
+
+.edit-profile-page .container {
+  max-width: 450px;
+  width: 100%;
+  margin: 50px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.edit-profile-page h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+.edit-profile-page .field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.edit-profile-page .field label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #555;
+  font-size: 14px;
+}
+
+.edit-profile-page .field input[type="text"],
+.edit-profile-page .field input[type="number"] {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.edit-profile-page .field input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.edit-profile-page .errors {
+  color: #d9534f;
+  font-size: 12px;
+  margin-top: 5px;
+  min-height: 15px; 
+}
+
+.edit-profile-page .radio-btn {
+  margin-bottom: 25px;
+}
+
+.edit-profile-page .radio-btn span {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #555;
+  font-size: 14px;
+}
+
+
+
+.edit-profile-page .btn {
+  display: flex;
+  gap: 1rem;
+  margin-top: 10px;
+}
+
+.edit-profile-page .normal-btn, 
+.edit-profile-page .disable-btn {
+  flex-grow: 1; 
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  height: 48px;
+  transition: background-color 0.2s ease;
+}
+
+.edit-profile-page .normal-btn {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.edit-profile-page .normal-btn:hover {
+  background-color: #357abd;
+}
+
+.edit-profile-page .disable-btn {
+  background-color: #4a90e2; 
+  color: white;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.edit-profile-page .back-btn {
+  background-color: #d9534f !important;
+}
+
+.edit-profile-page .back-btn:hover {
+  background-color: #c9302c !important;
+}
+
+.edit-profile-page .password-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+@media (max-width: 480px) {
+  .edit-profile-page .container {
+    margin: 20px;
+    padding: 20px;
+  }
+  
+  .edit-profile-page .btn {
+    flex-direction: column;
+  }
+}

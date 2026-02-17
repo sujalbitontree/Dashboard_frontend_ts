@@ -21,7 +21,7 @@ const ResetPasswordPage = () => {
 
   const [loading, setLoading] = useState(false)
 
-  const { formData, setFormData, errors, setErrors, handleChange, handleBlur } =
+  const { formData, setFormData, errors, setErrors, handleChange } =
     useForm<ResetPasswordInput>({
       password: '',
       confirmPassword: '',
@@ -77,7 +77,6 @@ const ResetPasswordPage = () => {
               type="password"
               value={formData.password}
               onChange={handleChange}
-              onBlur={handleBlur}
             />
             {errors.password && (
               <small className="errors">{errors.password}</small>
@@ -92,7 +91,6 @@ const ResetPasswordPage = () => {
               type="password"
               value={formData.confirmPassword}
               onChange={handleChange}
-              onBlur={handleBlur}
             />
             {errors.confirmPassword && (
               <small className="errors">{errors.confirmPassword}</small>

@@ -1,0 +1,135 @@
+:root {
+  --primary: #6366f1;
+  --bg-subtle: #f8fafc;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --border-color: #e2e8f0;
+  --rating-bg: #fffbeb;
+  --rating-text: #92400e;
+}
+
+.detail-container {
+  max-width: 1000px;
+  margin: 60px auto;
+  padding: 0 20px;
+    
+}
+
+.back-btn {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  padding: 6px 14px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-weight: 500;
+  margin-bottom: 15px;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background: var(--bg-subtle);
+  border-color: var(--text-muted);
+  color: var(--text-main);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 60px;
+  align-items: center; 
+}
+
+.main-detail-image {
+  width: 100%;
+  aspect-ratio: 4/5;
+  border-radius: 24px;
+  object-fit: cover;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  transition: transform 0.3s ease;
+}
+
+.main-detail-image:hover {
+  transform: scale(1.02);
+}
+
+.detail-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.detail-brand-tag {
+  color: var(--primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-size: 0.75rem;
+  padding-left: 5px;
+}
+
+.detail-rating {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--rating-text);
+  background: var(--rating-bg);
+  padding: 2px 10px;
+  border-radius: 6px;
+  width: max-content;
+}
+
+.detail-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
+  margin-bottom: 7px;
+}
+
+.detail-category {
+  font-size: 1rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+
+.detail-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.detail-price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.detail-discount {
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.detail-description {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  border-left: 3px solid var(--primary);
+  padding-left: 20px;
+}
+
+
+
+@media (max-width: 850px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  .detail-title {
+    font-size: 2.2rem;
+  }
+}

@@ -1,80 +1,74 @@
 'use client'
 
-import React, { useState, ChangeEvent, FormEvent } from 'react'
+import React, { FormEvent } from 'react'
 import { toast } from 'react-toastify'
 import { AxiosError } from 'axios'
-import { ValidationError } from 'yup'
-import Link from 'next/link' 
-import { forgotPasswordSchema } from '@/utils/forgotPasswordValidation'
+import Link from 'next/link'
+import { useForm } from '@/hooks/useForm' 
 import api from '@/services/api'
+import { EmailInput } from '@/utils/forgotPasswordValidation'
 
 
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState<string>('')
-  const [error, setError] = useState<string>('')
-  const [loading, setLoading] = useState<boolean>(false)
+  const { 
+    formData, 
+    errors, 
+    handleChange, 
+    setFormData, 
+    setErrors,
+    hasErrors 
+  } = useForm<EmailInput>({
+    email: ''
+  })
 
-  const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value
-    setEmail(newValue)
-
-    try {
-      await forgotPasswordSchema.validateAt('email', { email: newValue })
-      setError('')
-    } catch (err) {
-      if (err instanceof ValidationError) {
-        setError(err.message)
-      }
-    }
-  }
+  const [loading, setLoading] = React.useState<boolean>(false)
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
-    
+
     try {
-      const response = await api.post('/forgot-password', { email })
+      const response = await api.post('/forgot-password', { email: formData.email })
       toast.success(response.data.message)
-      setError('')
-      setEmail('') 
+      setFormData({ email: '' })
     } catch (err: unknown) {
       if (err instanceof AxiosError) {
         const errorMessage = err.response?.data?.message || 'Something went wrong'
-        setError(errorMessage)
         toast.error(errorMessage)
       } else {
         toast.error('An unexpected error occurred')
       }
     } finally {
       setLoading(false)
-      
+      setErrors({})
     }
   }
 
-  const isInvalid = !email.trim() || !!error || loading
+  const isInvalid = !formData.email.trim() || hasErrors || loading
 
- return (
-    <div className="wrapper"> 
-      <div className="container"> 
+  return (
+    <div className="wrapper">
+      <div className="container">
         <div className="head">
           <h2>Forgot Password</h2>
         </div>
-        
+
         <form className="inputs" onSubmit={handleSubmit} noValidate>
           <div className="field">
             <label htmlFor="email">Email</label>
             <input
               type="email"
               id="email"
-              value={email}
+              name="email" 
+              value={formData.email}
               onChange={handleChange}
               required
             />
-            <small className="errors">{error || ""}</small>
+            <small className="errors">{errors.email || ""}</small>
           </div>
 
-          <div className="btn"> 
+          <div className="btn">
             <button
               type="submit"
               disabled={isInvalid}

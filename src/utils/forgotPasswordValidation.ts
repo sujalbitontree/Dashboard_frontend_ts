@@ -1,12 +1,8 @@
 import * as Yup from 'yup'
+import { emailValidation } from './schema';
 
 export const forgotPasswordSchema = Yup.object().shape({
-  email: Yup.string()
-    .matches(
-      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      'Invalid email format'
-    )
-    .required('Email is required'),
+  email: emailValidation,
 })
 
 export type EmailInput = Yup.InferType<typeof forgotPasswordSchema>;
